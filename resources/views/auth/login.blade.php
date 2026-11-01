@@ -26,12 +26,32 @@
 
         <div>
             <label>Password</label><br>
-            <input type="password" name="password" required>
+            <input
+                type="password"
+                name="password"
+                id="password"
+                required
+            >
+            <button type="button" id="togglePassword">
+                Show
+            </button>
         </div>
 
         <br>
 
         <button type="submit">Login</button>
     </form>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+
+        togglePassword.addEventListener('click', function () {
+            const isHidden = passwordInput.type === 'password';
+
+            passwordInput.type = isHidden ? 'text' : 'password';
+            togglePassword.textContent = isHidden ? 'Hide' : 'Show';
+        });
+    </script>
 </body>
 </html>

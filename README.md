@@ -1,6 +1,6 @@
 # Inventory Management System
 
-Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mulai dari pencatatan barang masuk dan keluar, pemantauan stok, hingga riwayat transaksi dan kartu stok bulanan.
+Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mulai dari pencatatan barang masuk dan keluar, pemantauan stok, stock opname, hingga riwayat transaksi dan kartu stok bulanan.
 
 ## 1. Teknologi yang Digunakan
 
@@ -14,14 +14,15 @@ Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mula
 
 ### Authentication
 - Login dan logout pengguna.
-- Halaman utama dan fitur transaksi dilindungi autentikasi.
+- Halaman utama dan fitur aplikasi dilindungi autentikasi.
+- Pencatatan pengguna yang melakukan transaksi.
 
 ### Master Barang
 - Menambahkan data barang.
 - Menyimpan kode barang, nama barang, satuan, dan minimum stok.
-- Kode barang harus unik.
+- Validasi kode barang agar unik.
 - Menampilkan jumlah stok terkini.
-- Memberikan indikator stok aman atau stok menipis.
+- Indikator stok aman atau stok menipis.
 
 ### Transaksi Stok
 - Pencatatan barang masuk (IN).
@@ -29,7 +30,7 @@ Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mula
 - Pencatatan supplier atau tujuan barang.
 - Pencatatan pengguna yang melakukan transaksi.
 - Validasi agar barang keluar tidak melebihi stok tersedia.
-- Pencegahan pengiriman ulang transaksi menggunakan idempotency key.
+- Pencegahan transaksi ganda melalui idempotency key.
 - Kategori transaksi:
   - NORMAL
   - CORRECTION
@@ -39,6 +40,7 @@ Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mula
 - Membandingkan stok sistem dengan stok fisik.
 - Membuat transaksi penyesuaian otomatis berdasarkan selisih.
 - Tidak membuat transaksi penyesuaian jika stok fisik sama dengan stok sistem.
+- Penyesuaian dicatat sebagai transaksi baru.
 
 ### Kartu Stok
 - Menampilkan saldo awal.
@@ -46,20 +48,24 @@ Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mula
 - Menampilkan total barang keluar.
 - Menampilkan saldo akhir.
 - Menghitung saldo awal berdasarkan saldo akhir periode sebelumnya.
+- Menampilkan riwayat pergerakan stok.
 
 ## 3. Instalasi dan Konfigurasi
 
-Pastikan perangkat sudah memiliki:
-- PHP 8.2 atau lebih baru.
+### Persyaratan Sistem
+
+Pastikan perangkat telah memiliki:
+
+- PHP 8.3 atau lebih baru.
 - Composer.
-- SQLite.
 - Git.
+- SQLite dan ekstensi PHP SQLite (PDO SQLite).
 
 ### Clone Repository
 
 ```bash
-git clone <REPOSITORY_URL>
-cd inventory-app
+git clone https://github.com/bimaoktaditya-max/inventory-management-system.git
+cd inventory-management-system
 ```
 
 ### Install Dependencies
@@ -72,6 +78,14 @@ composer install
 
 Salin file environment:
 
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Linux/macOS:
+
 ```bash
 cp .env.example .env
 ```
@@ -82,19 +96,29 @@ Generate application key:
 php artisan key:generate
 ```
 
-Atur konfigurasi database pada file `.env`:
+Pastikan konfigurasi database pada file `.env` menggunakan SQLite:
 
 ```env
 DB_CONNECTION=sqlite
 ```
 
-Pastikan file database tersedia di:
+### Membuat Database
 
-```text
-database/database.sqlite
+Pastikan file `database/database.sqlite` tersedia.
+
+Jika belum tersedia:
+
+Windows PowerShell:
+
+```powershell
+New-Item database\database.sqlite -ItemType File
 ```
 
-Jika belum tersedia, buat file tersebut sebelum menjalankan migrasi.
+Linux/macOS:
+
+```bash
+touch database/database.sqlite
+```
 
 ### Jalankan Migrasi dan Seeder
 
@@ -102,11 +126,7 @@ Jika belum tersedia, buat file tersebut sebelum menjalankan migrasi.
 php artisan migrate --seed
 ```
 
-Jika akun demo belum dibuat oleh DatabaseSeeder, jalankan:
-
-```bash
-php artisan db:seed --class=UserSeeder
-```
+Perintah tersebut akan membuat tabel database dan akun admin melalui DatabaseSeeder.
 
 ### Jalankan Aplikasi
 
@@ -114,11 +134,9 @@ php artisan db:seed --class=UserSeeder
 php artisan serve
 ```
 
-Buka aplikasi melalui:
+Buka aplikasi melalui browser:
 
-```text
 http://127.0.0.1:8000
-```
 
 ## 4. Akun Demo
 
@@ -126,9 +144,9 @@ http://127.0.0.1:8000
 |---|---|
 | Email | admin@gudang.test |
 | Password | Gudang123! |
-| Role | Admin Gudang |
+| Pengguna | Admin Gudang |
 
-Akun tersebut digunakan untuk keperluan pengujian aplikasi.
+Akun demo digunakan untuk keperluan pengujian aplikasi.
 
 ## 5. Menjalankan Automated Test
 
@@ -138,4 +156,47 @@ Jalankan perintah:
 php artisan test
 ```
 
-Test yang tersedia mem
+Hasil pengujian terakhir:
+
+- 2 tests passed.
+- 3 assertions passed.
+
+Test yang tersedia mencakup pengujian unit dasar dan validasi bahwa pengguna yang belum login diarahkan ke halaman login.
+
+Pengujian manual juga dilakukan terhadap fitur master barang, transaksi masuk dan keluar, validasi stok, stock opname, kartu stok, serta autentikasi.
+
+## 6. Asumsi dan Batasan
+
+- Aplikasi menggunakan SQLite untuk kebutuhan pengembangan dan pengujian.
+- Akun demo digunakan sebagai pengguna administrator gudang.
+- Stok dihitung berdasarkan akumulasi transaksi barang masuk dikurangi transaksi barang keluar.
+- Transaksi yang sudah tercatat tidak disediakan fitur edit atau hapus. Koreksi dilakukan melalui transaksi baru.
+- Idempotency key digunakan untuk mencegah penyimpanan transaksi ganda akibat pengiriman ulang form.
+- `lockForUpdate()` digunakan dalam proses transaksi, tetapi SQLite tidak menyediakan mekanisme row-level locking seperti database server tertentu. Karena itu, pengujian ini belum membuktikan keamanan transaksi konkuren untuk lingkungan produksi.
+- Fitur Excel Export belum diimplementasikan.
+
+## 7. Dokumentasi Pengguna
+
+Panduan penggunaan aplikasi tersedia pada:
+
+`docs/USER_MANUAL.md`
+
+Dokumen tersebut menjelaskan proses login, pengelolaan master barang, transaksi stok, stock opname, riwayat transaksi, dan kartu stok.
+
+## 8. Penggunaan AI
+
+AI digunakan sebagai alat bantu selama proses pengembangan, antara lain untuk:
+
+- Membantu memahami konsep dan struktur Laravel.
+- Membantu proses debugging.
+- Membantu penyusunan dan pemeriksaan kode.
+- Membantu penyusunan dokumentasi.
+- Membantu merancang skenario pengujian.
+
+Implementasi, konfigurasi, pengujian, dan pemeriksaan hasil aplikasi dilakukan secara bertahap oleh pengembang.
+
+## 9. Status Pengembangan
+
+Fitur utama aplikasi telah diimplementasikan dan diuji melalui instalasi bersih dari repository, pengujian manual, serta automated test dasar.
+
+Fitur bonus Excel Export dan pengujian concurrency tingkat produksi belum diimplementasikan.
