@@ -14,7 +14,7 @@ class StockTransactionController extends Controller
     {
         $items = Item::orderBy('name')->get();
 
-        $transactions = StockTransaction::with('item')
+        $transactions = StockTransaction::with('item', 'user')
             ->latest('transaction_date')
             ->latest('id')
             ->get();
@@ -27,15 +27,23 @@ class StockTransactionController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'item_id' => ['required', 'exists:items,id'],
-            'type' => ['required', 'in:IN,OUT'],
-            'quantity' => ['required', 'integer', 'min:1'],
+            'category' => ['required', 'in:NORMAL,CORRECTION,STOCK_OPNAME'],
             'transaction_date' => ['required', 'date'],
             'reference' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:255'],
             'idempotency_key' => ['required', 'uuid'],
-        ]);
+        ];
+
+        if ($request->category === 'STOCK_OPNAME') {
+            $rules['physical_stock'] = ['required', 'integer', 'min:0'];
+        } else {
+            $rules['type'] = ['required', 'in:IN,OUT'];
+            $rules['quantity'] = ['required', 'integer', 'min:1'];
+        }
+
+        $validated = $request->validate($rules);
 
         $saved = DB::transaction(function () use ($validated) {
 
@@ -62,6 +70,30 @@ class StockTransactionController extends Controller
 
             $currentStock = $stockIn - $stockOut;
 
+            if ($validated['category'] === 'STOCK_OPNAME') {
+
+                $physicalStock = (int) $validated['physical_stock'];
+
+                $difference = $physicalStock - $currentStock;
+
+                if ($difference === 0) {
+                    return 'unchanged';
+                }
+
+                $validated['type'] = $difference > 0 ? 'IN' : 'OUT';
+                $validated['quantity'] = abs($difference);
+
+                $validated['notes'] = trim(
+                    ($validated['notes'] ?? '')
+                    . ' | Stock Opname. Stok sistem: '
+                    . $currentStock
+                    . ', stok fisik: '
+                    . $physicalStock
+                );
+
+                unset($validated['physical_stock']);
+            }
+
             if (
                 $validated['type'] === 'OUT' &&
                 $validated['quantity'] > $currentStock
@@ -83,6 +115,12 @@ class StockTransactionController extends Controller
             return redirect()
                 ->route('transactions.index')
                 ->with('success', 'Transaksi ini sudah pernah diproses.');
+        }
+
+        if ($saved === 'unchanged') {
+            return redirect()
+                ->route('transactions.index')
+                ->with('success', 'Stok fisik sama dengan stok sistem. Tidak ada penyesuaian.');
         }
 
         return redirect()

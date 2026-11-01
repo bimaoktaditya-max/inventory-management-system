@@ -4,13 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transaksi Stok - Inventory App</title>
-    <nav style="margin: 20px 0;">
-    <a href="{{ route('items.index') }}">Master Barang</a>
-    |
-    <a href="{{ route('transactions.index') }}">Transaksi Stok</a>
-    |
-    <a href="{{ route('stock-cards.index') }}">Kartu Stok</a>
-</nav>
 
     <style>
         body {
@@ -36,6 +29,20 @@
 
         h1, h2 {
             margin-top: 0;
+        }
+
+        nav {
+            margin: 20px 0;
+        }
+
+        nav a {
+            color: #2563eb;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
         }
 
         .form-grid {
@@ -80,6 +87,14 @@
             background: #1d4ed8;
         }
 
+        .logout-button {
+            background: #dc2626;
+        }
+
+        .logout-button:hover {
+            background: #b91c1c;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -116,6 +131,10 @@
             text-decoration: none;
         }
 
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
         @media (max-width: 700px) {
             body {
                 padding: 15px;
@@ -130,6 +149,17 @@
 
 <body>
 <div class="container">
+
+    <nav>
+        <a href="{{ route('items.index') }}">Master Barang</a> |
+        <a href="{{ route('transactions.index') }}">Transaksi Stok</a> |
+        <a href="{{ route('stock-cards.index') }}">Kartu Stok</a>
+    </nav>
+
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
 
     <a href="{{ route('items.index') }}" class="back">
         ← Kembali ke Master Barang
@@ -161,17 +191,15 @@
             @csrf
 
             <input
-        type="hidden"
-        name="idempotency_key"
-        value="{{ (string) \Illuminate\Support\Str::uuid() }}"
-    >
-
-    <div class="form-grid">
+                type="hidden"
+                name="idempotency_key"
+                value="{{ (string) \Illuminate\Support\Str::uuid() }}"
+            >
 
             <div class="form-grid">
 
-                <div>
-                    <label for="type">Jenis Transaksi</label>
+            <div id="type-field">
+    <label for="type">Jenis Transaksi</label>
                     <select name="type" id="type" required>
                         <option value="">Pilih transaksi</option>
                         <option value="IN" {{ old('type') == 'IN' ? 'selected' : '' }}>
@@ -179,6 +207,22 @@
                         </option>
                         <option value="OUT" {{ old('type') == 'OUT' ? 'selected' : '' }}>
                             Barang Keluar
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="category">Kategori Transaksi</label>
+                    <select name="category" id="category" required>
+                        <option value="">Pilih kategori</option>
+                        <option value="NORMAL" {{ old('category', 'NORMAL') == 'NORMAL' ? 'selected' : '' }}>
+                            Transaksi Normal
+                        </option>
+                        <option value="CORRECTION" {{ old('category') == 'CORRECTION' ? 'selected' : '' }}>
+                            Koreksi Stok
+                        </option>
+                        <option value="STOCK_OPNAME" {{ old('category') == 'STOCK_OPNAME' ? 'selected' : '' }}>
+                            Stock Opname
                         </option>
                     </select>
                 </div>
@@ -210,17 +254,28 @@
                     </select>
                 </div>
 
-                <div>
-                    <label for="quantity">Jumlah</label>
-                    <input
-                        type="number"
-                        name="quantity"
-                        id="quantity"
-                        min="1"
-                        value="{{ old('quantity') }}"
-                        required
-                    >
-                </div>
+                <div id="quantity-field">
+    <label for="quantity">Jumlah Transaksi</label>
+    <input
+        type="number"
+        name="quantity"
+        id="quantity"
+        min="1"
+        value="{{ old('quantity') }}"
+    >
+</div>
+
+<div id="physical-stock-field" style="display: none;">
+    <label for="physical_stock">Jumlah Stok Fisik</label>
+    <input
+        type="number"
+        name="physical_stock"
+        id="physical_stock"
+        min="0"
+        value="{{ old('physical_stock') }}"
+    >
+    <small>Masukkan hasil penghitungan fisik di gudang.</small>
+</div>
 
                 <div>
                     <label for="reference">Supplier / Tujuan</label>
@@ -233,15 +288,14 @@
                     >
                 </div>
 
-                <div>
+                <div class="full">
                     <label for="notes">Catatan</label>
-                    <input
-                        type="text"
+                    <textarea
                         name="notes"
                         id="notes"
-                        value="{{ old('notes') }}"
-                        placeholder="Catatan tambahan"
-                    >
+                        rows="3"
+                        placeholder="Catatan tambahan atau alasan koreksi stok"
+                    >{{ old('notes') }}</textarea>
                 </div>
 
                 <div class="full">
@@ -257,41 +311,98 @@
     <div class="card">
         <h2>Riwayat Transaksi</h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Kode Barang</th>
-                    <th>Nama Barang</th>
-                    <th>Jenis</th>
-                    <th>Jumlah</th>
-                    <th>Supplier / Tujuan</th>
-                </tr>
-            </thead>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Kode Barang</th>
+                        <th>Nama Barang</th>
+                        <th>Jenis</th>
+                        <th>Kategori</th>
+                        <th>Jumlah</th>
+                        <th>Supplier / Tujuan</th>
+                        <th>Catatan</th>
+                        <th>Dicatat Oleh</th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                @forelse ($transactions as $transaction)
-                    <tr>
-                        <td>{{ $transaction->transaction_date }}</td>
-                        <td>{{ $transaction->item->code }}</td>
-                        <td>{{ $transaction->item->name }}</td>
-                        <td>
-                            {{ $transaction->type == 'IN' ? 'Masuk' : 'Keluar' }}
-                        </td>
-                        <td>{{ $transaction->quantity }}</td>
-                        <td>{{ $transaction->reference ?? '-' }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6">
-                            Belum ada transaksi stok.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                <tbody>
+                    @forelse ($transactions as $transaction)
+                        <tr>
+                            <td>{{ $transaction->transaction_date }}</td>
+                            <td>{{ $transaction->item->code }}</td>
+                            <td>{{ $transaction->item->name }}</td>
+                            <td>
+                                {{ $transaction->type == 'IN' ? 'Masuk' : 'Keluar' }}
+                            </td>
+                            <td>
+                                @switch($transaction->category)
+                                    @case('NORMAL')
+                                        Normal
+                                        @break
+
+                                    @case('CORRECTION')
+                                        Koreksi Stok
+                                        @break
+
+                                    @case('STOCK_OPNAME')
+                                        Stock Opname
+                                        @break
+
+                                    @default
+                                        -
+                                @endswitch
+                            </td>
+                            <td>{{ $transaction->quantity }}</td>
+                            <td>{{ $transaction->reference ?? '-' }}</td>
+                            <td>{{ $transaction->notes ?? '-' }}</td>
+                            <td>{{ $transaction->user->name ?? 'Belum tersedia' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9">
+                                Belum ada transaksi stok.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
+
+<script>
+    const categorySelect = document.getElementById('category');
+
+    const typeField = document.getElementById('type-field');
+    const typeInput = document.getElementById('type');
+
+    const quantityField = document.getElementById('quantity-field');
+    const quantityInput = document.getElementById('quantity');
+
+    const physicalStockField = document.getElementById('physical-stock-field');
+    const physicalStockInput = document.getElementById('physical_stock');
+
+    function updateTransactionForm() {
+        const isStockOpname = categorySelect.value === 'STOCK_OPNAME';
+
+        typeField.style.display = isStockOpname ? 'none' : 'block';
+        typeInput.required = !isStockOpname;
+        typeInput.disabled = isStockOpname;
+
+        quantityField.style.display = isStockOpname ? 'none' : 'block';
+        quantityInput.required = !isStockOpname;
+        quantityInput.disabled = isStockOpname;
+
+        physicalStockField.style.display = isStockOpname ? 'block' : 'none';
+        physicalStockInput.required = isStockOpname;
+    }
+
+    categorySelect.addEventListener('change', updateTransactionForm);
+
+    updateTransactionForm();
+</script>
 </body>
 </html>

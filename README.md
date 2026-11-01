@@ -1,58 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Inventory Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mulai dari pencatatan barang masuk dan keluar, pemantauan stok, hingga riwayat transaksi dan kartu stok bulanan.
 
-## About Laravel
+## 1. Teknologi yang Digunakan
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend:** PHP 8.5
+- **Framework:** Laravel 13
+- **Database:** SQLite
+- **Frontend:** HTML, CSS, JavaScript, Blade Template
+- **Development Environment:** Laravel Herd
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 2. Fitur Aplikasi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Authentication
+- Login dan logout pengguna.
+- Halaman utama dan fitur transaksi dilindungi autentikasi.
 
-## Learning Laravel
+### Master Barang
+- Menambahkan data barang.
+- Menyimpan kode barang, nama barang, satuan, dan minimum stok.
+- Kode barang harus unik.
+- Menampilkan jumlah stok terkini.
+- Memberikan indikator stok aman atau stok menipis.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Transaksi Stok
+- Pencatatan barang masuk (IN).
+- Pencatatan barang keluar (OUT).
+- Pencatatan supplier atau tujuan barang.
+- Pencatatan pengguna yang melakukan transaksi.
+- Validasi agar barang keluar tidak melebihi stok tersedia.
+- Pencegahan pengiriman ulang transaksi menggunakan idempotency key.
+- Kategori transaksi:
+  - NORMAL
+  - CORRECTION
+  - STOCK_OPNAME
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Stock Opname
+- Membandingkan stok sistem dengan stok fisik.
+- Membuat transaksi penyesuaian otomatis berdasarkan selisih.
+- Tidak membuat transaksi penyesuaian jika stok fisik sama dengan stok sistem.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Kartu Stok
+- Menampilkan saldo awal.
+- Menampilkan total barang masuk.
+- Menampilkan total barang keluar.
+- Menampilkan saldo akhir.
+- Menghitung saldo awal berdasarkan saldo akhir periode sebelumnya.
 
-## Agentic Development
+## 3. Instalasi dan Konfigurasi
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Pastikan perangkat sudah memiliki:
+- PHP 8.2 atau lebih baru.
+- Composer.
+- SQLite.
+- Git.
+
+### Clone Repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <REPOSITORY_URL>
+cd inventory-app
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Install Dependencies
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Konfigurasi Environment
 
-## Code of Conduct
+Salin file environment:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+```
 
-## Security Vulnerabilities
+Generate application key:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan key:generate
+```
 
-## License
+Atur konfigurasi database pada file `.env`:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```env
+DB_CONNECTION=sqlite
+```
+
+Pastikan file database tersedia di:
+
+```text
+database/database.sqlite
+```
+
+Jika belum tersedia, buat file tersebut sebelum menjalankan migrasi.
+
+### Jalankan Migrasi dan Seeder
+
+```bash
+php artisan migrate --seed
+```
+
+Jika akun demo belum dibuat oleh DatabaseSeeder, jalankan:
+
+```bash
+php artisan db:seed --class=UserSeeder
+```
+
+### Jalankan Aplikasi
+
+```bash
+php artisan serve
+```
+
+Buka aplikasi melalui:
+
+```text
+http://127.0.0.1:8000
+```
+
+## 4. Akun Demo
+
+| Informasi | Nilai |
+|---|---|
+| Email | admin@gudang.test |
+| Password | Gudang123! |
+| Role | Admin Gudang |
+
+Akun tersebut digunakan untuk keperluan pengujian aplikasi.
+
+## 5. Menjalankan Automated Test
+
+Jalankan perintah:
+
+```bash
+php artisan test
+```
+
+Test yang tersedia mem

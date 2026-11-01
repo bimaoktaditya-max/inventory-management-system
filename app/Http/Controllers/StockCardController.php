@@ -28,10 +28,12 @@ class StockCardController extends Controller
 
         if ($selectedItem) {
             $startDate = Carbon::createFromFormat('Y-m', $month)
-                ->startOfMonth();
+    ->startOfMonth()
+    ->toDateString();
 
-            $endDate = $startDate->copy()->endOfMonth();
-
+$endDate = Carbon::createFromFormat('Y-m', $month)
+    ->endOfMonth()
+    ->toDateString();
             $openingIn = StockTransaction::where('item_id', $selectedItem->id)
                 ->where('type', 'IN')
                 ->whereDate('transaction_date', '<', $startDate)
@@ -45,23 +47,26 @@ class StockCardController extends Controller
             $openingStock = $openingIn - $openingOut;
 
             $totalIn = StockTransaction::where('item_id', $selectedItem->id)
-                ->where('type', 'IN')
-                ->whereBetween('transaction_date', [$startDate, $endDate])
-                ->sum('quantity');
+    ->where('type', 'IN')
+    ->whereDate('transaction_date', '>=', $startDate)
+    ->whereDate('transaction_date', '<=', $endDate)
+    ->sum('quantity');
 
-            $totalOut = StockTransaction::where('item_id', $selectedItem->id)
-                ->where('type', 'OUT')
-                ->whereBetween('transaction_date', [$startDate, $endDate])
-                ->sum('quantity');
+    $totalOut = StockTransaction::where('item_id', $selectedItem->id)
+    ->where('type', 'OUT')
+    ->whereDate('transaction_date', '>=', $startDate)
+    ->whereDate('transaction_date', '<=', $endDate)
+    ->sum('quantity');
 
             $closingStock = $openingStock + $totalIn - $totalOut;
 
             $transactions = StockTransaction::with('user')
-                ->where('item_id', $selectedItem->id)
-                ->whereBetween('transaction_date', [$startDate, $endDate])
-                ->orderBy('transaction_date')
-                ->orderBy('id')
-                ->get();
+    ->where('item_id', $selectedItem->id)
+    ->whereDate('transaction_date', '>=', $startDate)
+    ->whereDate('transaction_date', '<=', $endDate)
+    ->orderBy('transaction_date')
+    ->orderBy('id')
+    ->get();
         }
 
         return view('stock-cards.index', compact(

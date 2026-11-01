@@ -10,6 +10,7 @@ class StockTransaction extends Model
     protected $fillable = [
         'item_id',
         'type',
+        'category',
         'quantity',
         'transaction_date',
         'reference',
