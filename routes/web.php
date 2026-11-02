@@ -33,6 +33,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/items', [ItemController::class, 'store'])
         ->name('items.store');
 
+        Route::put('/items/{item}', [ItemController::class, 'update'])
+    ->name('items.update');
+
+Route::delete('/items/{item}', [ItemController::class, 'destroy'])
+    ->name('items.destroy');
+
     // Transaksi Stok
     Route::get('/transactions', [StockTransactionController::class, 'index'])
         ->name('transactions.index');
