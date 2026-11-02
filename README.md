@@ -19,18 +19,22 @@ Aplikasi web sederhana untuk membantu pengelolaan persediaan barang gudang, mula
 
 ### Master Barang
 - Menambahkan data barang.
+- Mengedit informasi barang.
+- Menghapus barang yang belum memiliki riwayat transaksi.
 - Menyimpan kode barang, nama barang, satuan, dan minimum stok.
 - Validasi kode barang agar unik.
+- Kode barang tidak dapat diubah jika sudah memiliki riwayat transaksi.
 - Menampilkan jumlah stok terkini.
 - Indikator stok aman atau stok menipis.
 
 ### Transaksi Stok
 - Pencatatan barang masuk (IN).
 - Pencatatan barang keluar (OUT).
-- Pencatatan supplier atau tujuan barang.
+- Pencatatan supplier atau tujuan barang melalui informasi referensi.
 - Pencatatan pengguna yang melakukan transaksi.
 - Validasi agar barang keluar tidak melebihi stok tersedia.
 - Pencegahan transaksi ganda melalui idempotency key.
+- Transaksi yang sudah tersimpan tidak dapat diedit atau dihapus melalui aplikasi.
 - Kategori transaksi:
   - NORMAL
   - CORRECTION
@@ -76,7 +80,7 @@ composer install
 
 ### Konfigurasi Environment
 
-Salin file environment:
+Salin file environment.
 
 Windows PowerShell:
 
@@ -101,6 +105,8 @@ Pastikan konfigurasi database pada file `.env` menggunakan SQLite:
 ```env
 DB_CONNECTION=sqlite
 ```
+
+Konfigurasi session, queue, dan cache menggunakan nilai bawaan dari `.env.example`.
 
 ### Membuat Database
 
@@ -170,6 +176,8 @@ Pengujian manual juga dilakukan terhadap fitur master barang, transaksi masuk da
 - Aplikasi menggunakan SQLite untuk kebutuhan pengembangan dan pengujian.
 - Akun demo digunakan sebagai pengguna administrator gudang.
 - Stok dihitung berdasarkan akumulasi transaksi barang masuk dikurangi transaksi barang keluar.
+- Barang yang sudah memiliki riwayat transaksi tidak dapat dihapus.
+- Kode barang yang sudah memiliki riwayat transaksi tidak dapat diubah.
 - Transaksi yang sudah tercatat tidak disediakan fitur edit atau hapus. Koreksi dilakukan melalui transaksi baru.
 - Idempotency key digunakan untuk mencegah penyimpanan transaksi ganda akibat pengiriman ulang form.
 - `lockForUpdate()` digunakan dalam proses transaksi, tetapi SQLite tidak menyediakan mekanisme row-level locking seperti database server tertentu. Karena itu, pengujian ini belum membuktikan keamanan transaksi konkuren untuk lingkungan produksi.
@@ -179,24 +187,4 @@ Pengujian manual juga dilakukan terhadap fitur master barang, transaksi masuk da
 
 Panduan penggunaan aplikasi tersedia pada:
 
-`docs/USER_MANUAL.md`
-
-Dokumen tersebut menjelaskan proses login, pengelolaan master barang, transaksi stok, stock opname, riwayat transaksi, dan kartu stok.
-
-## 8. Penggunaan AI
-
-AI digunakan sebagai alat bantu selama proses pengembangan, antara lain untuk:
-
-- Membantu memahami konsep dan struktur Laravel.
-- Membantu proses debugging.
-- Membantu penyusunan dan pemeriksaan kode.
-- Membantu penyusunan dokumentasi.
-- Membantu merancang skenario pengujian.
-
-Implementasi, konfigurasi, pengujian, dan pemeriksaan hasil aplikasi dilakukan secara bertahap oleh pengembang.
-
-## 9. Status Pengembangan
-
-Fitur utama aplikasi telah diimplementasikan dan diuji melalui instalasi bersih dari repository, pengujian manual, serta automated test dasar.
-
-Fitur bonus Excel Export dan pengujian concurrency tingkat produksi belum diimplementasikan.
+`docs
