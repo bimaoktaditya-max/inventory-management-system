@@ -27,13 +27,28 @@ Data barang meliputi:
 - Satuan
 - Minimum stok
 
-Langkah menambahkan barang:
+**Menambahkan barang:**
 1. Buka menu **Master Barang**.
 2. Isi kode barang, nama barang, satuan, dan minimum stok.
 3. Klik tombol simpan.
 4. Data barang akan ditampilkan pada tabel Master Barang.
 
-Kode barang harus unik dan tidak boleh sama dengan barang lainnya.
+**Mengedit barang:**
+1. Pilih barang pada tabel Master Barang.
+2. Klik tombol **Edit**.
+3. Ubah informasi barang yang diperlukan.
+4. Simpan perubahan.
+
+**Menghapus barang:**
+1. Pilih barang yang akan dihapus.
+2. Klik tombol **Hapus**.
+3. Konfirmasi penghapusan jika diminta.
+
+**Ketentuan Master Barang:**
+- Kode barang harus unik dan tidak boleh sama dengan barang lainnya.
+- Barang yang sudah memiliki riwayat transaksi tidak dapat dihapus.
+- Kode barang yang sudah memiliki riwayat transaksi tidak dapat diubah.
+- Informasi barang lainnya tetap dapat diperbarui selama tidak melanggar validasi sistem.
 
 ### 4. Transaksi Barang Masuk dan Keluar
 
@@ -53,7 +68,7 @@ Menu Transaksi digunakan untuk mencatat pergerakan stok barang.
 4. Isi informasi referensi atau catatan jika diperlukan.
 5. Klik tombol simpan.
 
-Sistem akan menolak transaksi barang keluar apabila jumlah yang diminta melebihi stok tersedia.
+Sistem akan menolak transaksi barang keluar apabila jumlah yang diminta melebihi stok tersedia. Dengan demikian, stok tidak akan menjadi negatif.
 
 ### 5. Kategori Transaksi
 
@@ -88,7 +103,9 @@ Riwayat transaksi menampilkan catatan pergerakan stok barang, meliputi:
 - Referensi dan catatan
 - Pengguna yang mencatat transaksi
 
-Transaksi yang sudah tersimpan tidak disediakan fitur edit atau hapus melalui aplikasi. Koreksi dilakukan dengan membuat transaksi baru.
+Transaksi yang sudah tersimpan tidak disediakan fitur edit atau hapus melalui aplikasi. Koreksi dilakukan dengan membuat transaksi baru agar riwayat tetap terjaga.
+
+Sistem juga menggunakan mekanisme idempotency untuk mencegah satu permintaan penyimpanan transaksi tercatat lebih dari satu kali.
 
 ### 8. Kartu Stok Bulanan
 
@@ -99,8 +116,13 @@ Informasi yang ditampilkan:
 - Total barang masuk
 - Total barang keluar
 - Saldo akhir
+- Riwayat pergerakan barang pada periode tersebut
 
 Saldo awal bulan dihitung dari saldo akhir periode sebelumnya.
+
+Perhitungan saldo akhir:
+
+**Saldo Akhir = Saldo Awal + Barang Masuk - Barang Keluar**
 
 ### 9. Logout
 
@@ -116,3 +138,4 @@ Untuk mengakhiri sesi penggunaan aplikasi:
 - Gunakan kategori transaksi sesuai kebutuhan.
 - Periksa kembali tanggal dan jumlah sebelum menyimpan transaksi.
 - Jaga kerahasiaan akun login.
+- Lakukan Stock Opname secara berkala untuk memastikan kesesuaian stok sistem dengan kondisi fisik gudang.
