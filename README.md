@@ -187,4 +187,16 @@ Pengujian manual juga dilakukan terhadap fitur master barang, transaksi masuk da
 
 Panduan penggunaan aplikasi tersedia pada:
 
-`docs
+`docs/USER_MANUAL.md`
+
+## 8. Penggunaan AI
+
+AI digunakan sebagai alat bantu dalam memahami struktur Laravel,
+debugging, peninjauan kode, dan penyusunan dokumentasi.
+Implementasi diperiksa dan diuji kembali secara manual.
+
+## 9. Estimasi Pengerjaan
+
+Estimasi waktu pengerjaan: sekitar 24 jam.
+
+Pengerjaan dilakukan secara bertahap di luar jam kerja utama.

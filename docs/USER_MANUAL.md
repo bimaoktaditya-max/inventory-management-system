@@ -13,9 +13,11 @@ Inventory Management System merupakan aplikasi berbasis web untuk membantu penge
 4. Setelah berhasil, pengguna akan diarahkan ke halaman utama aplikasi.
 
 **Akun Demo:**
-- Email: `admin@gudang.test`
-- Password: `Gudang123!`
+- Email: [admin@gudang.test](mailto:admin@gudang.test)
+- Password: Gudang123!
 - Nama pengguna: Admin Gudang
+
+![Halaman Login](screenshots/login.png)
 
 ### 3. Master Barang
 
@@ -50,6 +52,8 @@ Data barang meliputi:
 - Kode barang yang sudah memiliki riwayat transaksi tidak dapat diubah.
 - Informasi barang lainnya tetap dapat diperbarui selama tidak melanggar validasi sistem.
 
+![Halaman Master Barang](screenshots/master-barang.png)
+
 ### 4. Transaksi Barang Masuk dan Keluar
 
 Menu Transaksi digunakan untuk mencatat pergerakan stok barang.
@@ -58,24 +62,28 @@ Menu Transaksi digunakan untuk mencatat pergerakan stok barang.
 1. Pilih barang.
 2. Pilih jenis transaksi **IN**.
 3. Masukkan tanggal dan jumlah barang.
-4. Isi informasi referensi atau catatan jika diperlukan.
-5. Klik tombol simpan.
+4. Isi informasi supplier pada field **Supplier / Tujuan** jika diperlukan.
+5. Isi catatan tambahan pada field **Catatan** jika diperlukan.
+6. Klik tombol simpan.
 
 **Barang Keluar (OUT)**
 1. Pilih barang.
 2. Pilih jenis transaksi **OUT**.
 3. Masukkan tanggal dan jumlah barang.
-4. Isi informasi referensi atau catatan jika diperlukan.
-5. Klik tombol simpan.
+4. Isi informasi tujuan pada field **Supplier / Tujuan** jika diperlukan.
+5. Isi catatan tambahan pada field **Catatan** jika diperlukan.
+6. Klik tombol simpan.
 
 Sistem akan menolak transaksi barang keluar apabila jumlah yang diminta melebihi stok tersedia. Dengan demikian, stok tidak akan menjadi negatif.
+
+![Halaman Transaksi](screenshots/transaksi.png)
 
 ### 5. Kategori Transaksi
 
 Aplikasi menyediakan tiga kategori transaksi:
 
 - **NORMAL:** transaksi barang masuk atau keluar seperti biasa.
-- **CORRECTION:** transaksi koreksi untuk memperbaiki pencatatan stok. Koreksi dilakukan melalui transaksi baru.
+- **CORRECTION:** Transaksi koreksi digunakan untuk mencatat penyesuaian stok melalui transaksi baru tanpa mengubah riwayat transaksi sebelumnya.
 - **STOCK_OPNAME:** penyesuaian stok berdasarkan hasil perhitungan fisik barang.
 
 ### 6. Stock Opname
@@ -107,6 +115,8 @@ Transaksi yang sudah tersimpan tidak disediakan fitur edit atau hapus melalui ap
 
 Sistem juga menggunakan mekanisme idempotency untuk mencegah satu permintaan penyimpanan transaksi tercatat lebih dari satu kali.
 
+![Halaman Riwayat Transaksi](screenshots/riwayat-transaksi.png)
+
 ### 8. Kartu Stok Bulanan
 
 Menu Kartu Stok digunakan untuk melihat pergerakan persediaan berdasarkan periode bulanan.
@@ -123,6 +133,8 @@ Saldo awal bulan dihitung dari saldo akhir periode sebelumnya.
 Perhitungan saldo akhir:
 
 **Saldo Akhir = Saldo Awal + Barang Masuk - Barang Keluar**
+
+![Halaman Kartu Stok](screenshots/kartu-stok.png)
 
 ### 9. Logout
 
